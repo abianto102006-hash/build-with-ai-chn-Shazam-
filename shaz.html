@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenMind — AI Agriculture Assistant</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --green-200: #97C459;
+            --green-400: #639922;
+            --green-600: #3B6D11;
+            --green-900: #173404;
+            --teal-200: #5DCAA5;
+            --scan-green: #39ff6a;
+            --ph-acid: #e85d5d;
+            --ph-neutral: #7fca5d;
+            --ph-alkaline: #5d8fe8;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #0c1808;
+            min-height: 100vh;
+            color: #e8f0e0;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 10% 10%, rgba(63, 109, 17, 0.28) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 90% 80%, rgba(15, 110, 86, 0.22) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 40% at 50% 50%, rgba(23, 52, 4, 0.6) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(99, 153, 34, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 153, 34, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 6rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(63, 109, 17, 0.15);
+            border: 1px solid rgba(99, 153, 34, 0.3);
+            border-radius: 100px;
+            padding: 6px 16px 6px 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-dot {
+            width: 26px;
+            height: 26px;
+            background: var(--green-400);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .logo-badge span {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--green-200);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+            font-weight: 400;
+            line-height: 1.1;
+            color: #f0f7e8;
+            margin-bottom: 0.75rem;
+        }
+
+        h1 em {
+            font-style: italic;
+            color: var(--green-200);
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: rgba(200, 220, 180, 0.6);
+            font-weight: 300;
+            max-width: 460px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(99, 153, 34, 0.2);
+            border-radius: 14px;
+            padding: 1rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            color: inherit;
+            font-family: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+            background: rgba(99, 153, 34, 0.12);
+            border-color: rgba(99, 153, 34, 0.45);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.active {
+            background: rgba(99, 153, 34, 0.18);
+            border-color: rgba(99, 153, 34, 0.6);
+            box-shadow: 0 0 0 1px rgba(99, 153, 34, 0.3);
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .btn-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #d4e8c0;
+        }
+
+        .btn-desc {
+            font-size: 11px;
+            color: rgba(200, 220, 180, 0.45);
+            line-height: 1.3;
+        }
+
+        .btn-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            background: rgba(91, 202, 165, 0.2);
+            color: var(--teal-200);
+            border: 1px solid rgba(91, 202, 165, 0.3);
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin-top: 2px;
+        }
+
+        .icon-disease {
+            background: rgba(250, 116, 98, 0.18);
+        }
+
+        .icon-crop {
+            background: rgba(99, 153, 34, 0.18);
+        }
+
+        .icon-medicine {
+            background: rgba(91, 202, 165, 0.18);
+        }
+
+        .icon-fert {
+            background: rgba(239, 159, 39, 0.18);
+        }
+
+        .icon-weather {
+            background: rgba(55, 138, 221, 0.18);
+        }
+
+        .icon-irrigation {
+            background: rgba(100, 180, 255, 0.18);
+        }
+
+        .mode-hint {
+            text-align: center;
+            font-size: 12px;
+            color: rgba(200, 220, 180, 0.35);
+            margin-bottom: 1rem;
+        }
+
+        .input-panel {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(99, 153, 34, 0.2);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(8px);
+            transition: border-color 0.3s;
+        }
+
+        .input-panel.highlight {
+            border-color: rgba(99, 153, 34, 0.45);
+        }
+
+        .input-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--green-200);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(99, 153, 34, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: #e8f0e0;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 300;
+            line-height: 1.6;
+            resize: none;
+            min-height: 90px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        textarea::placeholder {
+            color: rgba(200, 220, 180, 0.3);
+        }
+
+        textarea:focus {
+            border-color: rgba(99, 153, 34, 0.5);
+        }
+
+        /* Image section */
+        .image-section {
+            margin-top: 1rem;
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .image-section.visible {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Tabs */
+        .img-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 0.75rem;
+        }
+
+        .img-tab {
+            flex: 1;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(91, 202, 165, 0.2);
+            border-radius: 9px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(200, 220, 180, 0.5);
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .img-tab:hover {
+            border-color: rgba(91, 202, 165, 0.4);
+            color: rgba(200, 220, 180, 0.8);
+        }
+
+        .img-tab.active {
+            background: rgba(91, 202, 165, 0.12);
+            border-color: rgba(91, 202, 165, 0.55);
+            color: var(--teal-200);
+        }
+
+        /* Panes */
+        .upload-pane {
+            display: none;
+        }
+
+        .upload-pane.active {
+            display: block;
+        }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 1.5px dashed rgba(91, 202, 165, 0.25);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(91, 202, 165, 0.04);
+            position: relative;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.drag-over {
+            border-color: rgba(91, 202, 165, 0.5);
+            background: rgba(91, 202, 165, 0.08);
+        }
+
+        .upload-zone input[type=file] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-icon {
+            font-size: 26px;
+            margin-bottom: 6px;
+        }
+
+        .upload-text {
+            font-size: 13px;
+            color: rgba(200, 220, 180, 0.5);
+            line-height: 1.5;
+        }
+
+        .upload-text strong {
+            color: rgba(91, 202, 165, 0.8);
+            font-weight: 500;
+        }
+
+        .image-preview {
+            display: none;
+            margin-top: 0.75rem;
+            position: relative;
+        }
+
+        .image-preview.visible {
+            display: block;
+        }
+
+        .image-preview img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid rgba(91, 202, 165, 0.2);
+        }
+
+        .remove-img {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            padding: 3px 8px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.15s;
+        }
+
+        .remove-img:hover {
+            background: rgba(200, 60, 60, 0.5);
+        }
+
+        /* ═══════════════════════════
+       OPENCV CAMERA SCAN PANEL
+    ═══════════════════════════ */
+        .camera-outer {
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1.5px solid rgba(57, 255, 106, 0.3);
+            background: #000;
+            position: relative;
+            min-height: 180px;
+        }
+
+        #cameraFeed {
+            width: 100%;
+            display: block;
+            max-height: 320px;
+            object-fit: cover;
+        }
+
+        /* Corner bracket overlays */
+        .cv-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .cv-bracket {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border-color: var(--scan-green);
+            border-style: solid;
+            opacity: 0.8;
+        }
+
+        .cv-bracket.tl {
+            top: 10px;
+            left: 10px;
+            border-width: 2px 0 0 2px;
+            border-radius: 4px 0 0 0;
+        }
+
+        .cv-bracket.tr {
+            top: 10px;
+            right: 10px;
+            border-width: 2px 2px 0 0;
+            border-radius: 0 4px 0 0;
+        }
+
+        .cv-bracket.bl {
+            bottom: 10px;
+            left: 10px;
+            border-width: 0 0 2px 2px;
+            border-radius: 0 0 0 4px;
+        }
+
+        .cv-bracket.br {
+            bottom: 10px;
+            right: 10px;
+            border-width: 0 2px 2px 0;
+            border-radius: 0 0 4px 0;
+        }
+
+        /* Animated scan line */
+        .scan-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--scan-green) 20%, rgba(57, 255, 106, 0.5) 50%, var(--scan-green) 80%, transparent);
+            box-shadow: 0 0 10px 3px rgba(57, 255, 106, 0.35);
+            top: 10%;
+            opacity: 0;
+            transition: opacity 0.4s;
+            animation: scanMove 2.8s ease-in-out infinite;
+        }
+
+        .scan-line.active {
+            opacity: 1;
+        }
+
+        @keyframes scanMove {
+            0% {
+                top: 8%;
+            }
+
+            50% {
+                top: 86%;
+            }
+
+            100% {
+                top: 8%;
+            }
+        }
+
+        /* HUD top center */
+        .cv-hud {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--scan-green);
+            background: rgba(0, 0, 0, 0.55);
+            padding: 3px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(57, 255, 106, 0.3);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .cv-hud.active {
+            opacity: 1;
+        }
+
+        /* Bottom status bar */
+        .cv-statusbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 14px;
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            color: rgba(57, 255, 106, 0.7);
+            letter-spacing: 0.06em;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .cv-statusbar.active {
+            opacity: 1;
+        }
+
+        /* No-camera placeholder */
+        .cam-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: rgba(57, 255, 106, 0.3);
+        }
+
+        .cam-placeholder-icon {
+            font-size: 36px;
+        }
+
+        .cam-placeholder-text {
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* Camera controls */
+        .camera-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 0.75rem;
+        }
+
+        .cam-btn {
+            padding: 9px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .cam-start {
+            background: rgba(57, 255, 106, 0.12);
+            color: var(--scan-green);
+            border: 1px solid rgba(57, 255, 106, 0.35);
+            flex: 1;
+        }
+
+        .cam-start:hover {
+            background: rgba(57, 255, 106, 0.22);
+        }
+
+        .cam-capture {
+            background: var(--green-400);
+            color: var(--green-900);
+            font-weight: 600;
+            flex: 2;
+        }
+
+        .cam-capture:hover {
+            background: var(--green-200);
+        }
+
+        .cam-capture:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .cam-stop {
+            background: rgba(240, 100, 80, 0.1);
+            color: rgba(240, 150, 130, 0.8);
+            border: 1px solid rgba(240, 100, 80, 0.3);
+        }
+
+        .cam-stop:hover {
+            background: rgba(240, 100, 80, 0.2);
+        }
+
+        /* Captured frame */
+        .capture-preview {
+            display: none;
+            margin-top: 0.75rem;
+            position: relative;
+        }
+
+        .capture-preview.visible {
+            display: block;
+        }
+
+        .capture-preview img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid rgba(57, 255, 106, 0.25);
+        }
+
+        .capture-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.65);
+            border: 1px solid rgba(57, 255, 106, 0.4);
+            border-radius: 5px;
+            padding: 3px 10px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--scan-green);
+            text-transform: uppercase;
+        }
+
+        .recapture-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            padding: 3px 8px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.15s;
+        }
+
+        .recapture-btn:hover {
+            background: rgba(57, 255, 106, 0.2);
+            border-color: rgba(57, 255, 106, 0.4);
+            color: var(--scan-green);
+        }
+
+        #captureCanvas {
+            display: none;
+        }
+
+        /* ── Submit ── */
+        .submit-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .submit-btn {
+            flex: 1;
+            background: var(--green-400);
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 1.5rem;
+            color: var(--green-900);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            background: var(--green-200);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: 1px solid rgba(99, 153, 34, 0.2);
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            color: rgba(200, 220, 180, 0.5);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .clear-btn:hover {
+            border-color: rgba(99, 153, 34, 0.4);
+            color: rgba(200, 220, 180, 0.8);
+        }
+
+        /* ── Result ── */
+        .result-panel {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(99, 153, 34, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
+            display: none;
+            animation: slideUp 0.35s ease;
+        }
+
+        .result-panel.visible {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(99, 153, 34, 0.15);
+            background: rgba(99, 153, 34, 0.07);
+        }
+
+        .result-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--green-200);
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+        }
+
+        .result-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green-200);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .result-dot.done {
+            animation: none;
+            background: var(--green-400);
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid rgba(99, 153, 34, 0.2);
+            border-radius: 8px;
+            padding: 5px 10px;
+            color: rgba(200, 220, 180, 0.5);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .copy-btn:hover {
+            border-color: rgba(99, 153, 34, 0.4);
+            color: rgba(200, 220, 180, 0.9);
+        }
+
+        .result-body {
+            padding: 1.5rem 1.25rem;
+            font-size: 14.5px;
+            line-height: 1.8;
+            color: rgba(220, 240, 200, 0.85);
+            white-space: pre-wrap;
+            min-height: 80px;
+        }
+
+        .thinking {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(200, 220, 180, 0.5);
+            font-size: 14px;
+            padding: 1.5rem 1.25rem;
+        }
+
+        .thinking-dots span {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            background: var(--green-400);
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .thinking-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .thinking-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.6);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            font-size: 12px;
+            color: rgba(200, 220, 180, 0.2);
+            letter-spacing: 0.03em;
+        }
+
+        /* ════════════════════════════
+       IRRIGATION & pH PANEL
+    ════════════════════════════ */
+        .ph-panel {
+            display: none;
+            margin-top: 1rem;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .ph-panel.visible {
+            display: block;
+        }
+
+        .ph-plant-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.1rem;
+            align-items: flex-end;
+        }
+
+        .ph-plant-field {
+            flex: 1;
+        }
+
+        .ph-plant-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--teal-200);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .ph-plant-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 180, 255, 0.25);
+            border-radius: 10px;
+            padding: 0.65rem 1rem;
+            color: #e8f0e0;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 300;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .ph-plant-input::placeholder {
+            color: rgba(200, 220, 180, 0.3);
+        }
+
+        .ph-plant-input:focus {
+            border-color: rgba(100, 180, 255, 0.5);
+        }
+
+        /* pH scale track */
+        .ph-section {
+            margin-bottom: 1.1rem;
+        }
+
+        .ph-section-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(100, 180, 255, 0.8);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ph-value-badge {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0;
+            padding: 2px 10px;
+            border-radius: 6px;
+            transition: background 0.3s, color 0.3s;
+            font-family: 'DM Serif Display', serif;
+        }
+
+        .ph-track-wrapper {
+            position: relative;
+            padding: 6px 0;
+        }
+
+        .ph-gradient-bar {
+            width: 100%;
+            height: 10px;
+            border-radius: 10px;
+            background: linear-gradient(90deg,
+                    #e85d5d 0%, #e8935d 10%, #e8c45d 20%,
+                    #c4e85d 30%, #7fca5d 42%, #5de8a0 50%,
+                    #5dcae8 60%, #5d8fe8 75%, #7b5de8 90%, #b05de8 100%);
+            margin-bottom: 4px;
+        }
+
+        .ph-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: rgba(200, 220, 180, 0.35);
+            font-family: 'Courier New', monospace;
+            margin-bottom: 6px;
+        }
+
+        input[type=range].ph-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+            background: transparent;
+            margin: 0;
+        }
+
+        input[type=range].ph-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        input[type=range].ph-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        /* pH zone labels */
+        .ph-zones {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .ph-zone {
+            color: rgba(200, 220, 180, 0.3);
+        }
+
+        .ph-zone.acid {
+            color: rgba(232, 93, 93, 0.6);
+        }
+
+        .ph-zone.neutral {
+            color: rgba(127, 202, 93, 0.6);
+        }
+
+        .ph-zone.alkaline {
+            color: rgba(93, 143, 232, 0.6);
+        }
+
+        /* Irrigation controls */
+        .irr-section {
+            margin-bottom: 0.5rem;
+        }
+
+        .irr-section-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(100, 180, 255, 0.8);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 0.65rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .irr-freq-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 0.75rem;
+        }
+
+        .irr-chip {
+            padding: 7px 4px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid rgba(100, 180, 255, 0.2);
+            background: rgba(100, 180, 255, 0.05);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(200, 220, 180, 0.5);
+            transition: all 0.18s;
+        }
+
+        .irr-chip:hover {
+            border-color: rgba(100, 180, 255, 0.4);
+            color: rgba(200, 220, 180, 0.8);
+        }
+
+        .irr-chip.selected {
+            background: rgba(100, 180, 255, 0.15);
+            border-color: rgba(100, 180, 255, 0.55);
+            color: #b8d8ff;
+        }
+
+        /* Irrigation amount slider */
+        .irr-amount-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .irr-amount-label {
+            font-size: 12px;
+            color: rgba(200, 220, 180, 0.5);
+            white-space: nowrap;
+        }
+
+        input[type=range].irr-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, rgba(100, 180, 255, 0.6), rgba(100, 180, 255, 0.15));
+        }
+
+        input[type=range].irr-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #88c8ff;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+        }
+
+        .irr-amount-val {
+            font-size: 13px;
+            font-weight: 600;
+            color: #88c8ff;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        @media (max-width: 500px) {
+            .actions-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrapper">
+
+        <header class="header">
+            <div class="logo-badge">
+                <div class="logo-dot">🌿</div>
+                <span>GreenMind AI</span>
+            </div>
+            <h1>Your fields,<br><em>intelligently</em> advised.</h1>
+            <p class="subtitle">Describe, upload a photo, or scan live with your camera for instant AI diagnosis.</p>
+        </header>
+
+        <!-- Mode buttons -->
+        <div class="actions-grid">
+            <button class="action-btn" data-type="disease" data-image="true" onclick="selectMode(this)">
+                <div class="btn-icon icon-disease">🔬</div>
+                <div class="btn-label">Disease Detection</div>
+                <div class="btn-desc">Identify plant illness</div>
+                <span class="btn-badge">📷 scan + text</span>
+            </button>
+            <button class="action-btn" data-type="crop" data-image="false" onclick="selectMode(this)">
+                <div class="btn-icon icon-crop">🌾</div>
+                <div class="btn-label">Crop Recommendation</div>
+                <div class="btn-desc">Best crops for conditions</div>
+            </button>
+            <button class="action-btn" data-type="medicine" data-image="true" onclick="selectMode(this)">
+                <div class="btn-icon icon-medicine">💊</div>
+                <div class="btn-label">Medication Advice</div>
+                <div class="btn-desc">Treatment suggestions</div>
+                <span class="btn-badge">📷 scan + text</span>
+            </button>
+            <button class="action-btn" data-type="fertilizer" data-image="true" onclick="selectMode(this)">
+                <div class="btn-icon icon-fert">🧪</div>
+                <div class="btn-label">Fertilizer Guide</div>
+                <div class="btn-desc">Dosage & application</div>
+                <span class="btn-badge">📷 scan + text</span>
+            </button>
+            <button class="action-btn" data-type="weather" data-image="false" onclick="selectMode(this)">
+                <div class="btn-icon icon-weather">🌍</div>
+                <div class="btn-label">Location & Season</div>
+                <div class="btn-desc">Crops for your climate</div>
+            </button>
+            <button class="action-btn" data-type="irrigation" data-image="false" onclick="selectMode(this)">
+                <div class="btn-icon icon-irrigation">💧</div>
+                <div class="btn-label">Irrigation & pH</div>
+                <div class="btn-desc">Water & soil acidity</div>
+            </button>
+        </div>
+
+        <p class="mode-hint" id="modeHint">↑ Select a mode above, then describe your situation</p>
+
+        <!-- Input panel -->
+        <div class="input-panel" id="inputPanel">
+            <div class="input-label">Describe your situation</div>
+            <textarea id="userInput" placeholder="e.g. Yellow spots on tomato leaves, clay soil, Kerala…"
+                rows="4"></textarea>
+
+            <!-- Image section -->
+            <div class="image-section" id="imageSection">
+
+                <div class="img-tabs">
+                    <button class="img-tab active" id="tabUpload" onclick="switchTab('upload')">📁 Upload Photo</button>
+                    <button class="img-tab" id="tabCamera" onclick="switchTab('camera')">📷 Live Camera Scan</button>
+                </div>
+
+                <!-- Upload pane -->
+                <div class="upload-pane active" id="uploadPane">
+                    <div class="upload-zone" id="uploadZone" ondragover="handleDragOver(event)"
+                        ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                        <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(event)">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text"><strong>Click to upload</strong> or drag & drop<br>JPG, PNG, WEBP — max
+                            10 MB</div>
+                    </div>
+                    <div class="image-preview" id="imagePreview">
+                        <img id="previewImg" src="" alt="Plant image">
+                        <button class="remove-img" onclick="removeUploadedImage()">✕ Remove</button>
+                    </div>
+                </div>
+
+                <!-- Camera pane -->
+                <div class="upload-pane" id="cameraPane">
+
+                    <div class="camera-outer" id="cameraOuter">
+                        <!-- Placeholder shown before camera starts -->
+                        <div class="cam-placeholder" id="camPlaceholder">
+                            <div class="cam-placeholder-icon">📷</div>
+                            <div class="cam-placeholder-text">Camera not started</div>
+                        </div>
+
+                        <video id="cameraFeed" autoplay playsinline muted style="display:none"></video>
+
+                        <!-- OpenCV-style overlay -->
+                        <div class="cv-overlay" id="cvOverlay" style="display:none">
+                            <div class="cv-bracket tl"></div>
+                            <div class="cv-bracket tr"></div>
+                            <div class="cv-bracket bl"></div>
+                            <div class="cv-bracket br"></div>
+                            <div class="scan-line" id="scanLine"></div>
+                            <div class="cv-hud" id="cvHud">GreenMind CV · Scanning…</div>
+                            <div class="cv-statusbar" id="cvStatus">
+                                <span id="statusLeft">INITIALIZING…</span>
+                                <span id="statusRight">AI DETECTION READY</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <canvas id="captureCanvas"></canvas>
+
+                    <div class="camera-controls">
+                        <button class="cam-btn cam-start" id="startCamBtn" onclick="startCamera()">▶ Start
+                            Camera</button>
+                        <button class="cam-btn cam-capture" id="captureBtn" onclick="captureFrame()" disabled>📸 Capture
+                            &amp; Analyze</button>
+                        <button class="cam-btn cam-stop" id="stopCamBtn" onclick="stopCamera()" style="display:none">■
+                            Stop</button>
+                    </div>
+
+                    <div class="capture-preview" id="capturePreview">
+                        <img id="capturedImg" src="" alt="Captured frame">
+                        <span class="capture-badge">✓ Frame Captured</span>
+                        <button class="recapture-btn" onclick="recapture()">↺ Retake</button>
+                    </div>
+
+                </div><!-- /cameraPane -->
+            </div><!-- /imageSection -->
+
+            <!-- pH & Irrigation panel -->
+            <div class="ph-panel" id="phPanel">
+
+                <!-- Plant name -->
+                <div class="ph-plant-row">
+                    <div class="ph-plant-field">
+                        <label for="plantName">Plant / Crop Name</label>
+                        <input class="ph-plant-input" type="text" id="plantName"
+                            placeholder="e.g. Tomato, Rice, Banana, Coconut…">
+                    </div>
+                </div>
+
+                <!-- pH Slider -->
+                <div class="ph-section">
+                    <div class="ph-section-label">
+                        <span>Soil pH Level</span>
+                        <span class="ph-value-badge" id="phBadge">6.5</span>
+                    </div>
+                    <div class="ph-track-wrapper">
+                        <div class="ph-gradient-bar"></div>
+                        <div class="ph-labels">
+                            <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span>
+                            <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+                            <span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+                        </div>
+                        <input type="range" class="ph-slider" id="phSlider" min="0" max="14" step="0.1" value="6.5"
+                            oninput="updatePh(this.value)">
+                    </div>
+                    <div class="ph-zones">
+                        <span class="ph-zone acid">◀ Acidic (0–6)</span>
+                        <span class="ph-zone neutral">Neutral (6–7) ▶</span>
+                        <span class="ph-zone alkaline">Alkaline (7–14) ▶</span>
+                    </div>
+                </div>
+
+                <!-- Irrigation frequency -->
+                <div class="irr-section">
+                    <div class="irr-section-label">
+                        <span>Irrigation Frequency</span>
+                        <span id="irrFreqLabel"
+                            style="font-size:12px;color:#88c8ff;letter-spacing:0;text-transform:none;font-weight:500;">Daily</span>
+                    </div>
+                    <div class="irr-freq-grid" id="irrFreqGrid">
+                        <div class="irr-chip selected" data-freq="Daily" onclick="selectFreq(this)">Daily</div>
+                        <div class="irr-chip" data-freq="Every 2 days" onclick="selectFreq(this)">Every 2d</div>
+                        <div class="irr-chip" data-freq="Twice a week" onclick="selectFreq(this)">2× / week</div>
+                        <div class="irr-chip" data-freq="Weekly" onclick="selectFreq(this)">Weekly</div>
+                        <div class="irr-chip" data-freq="Bi-weekly" onclick="selectFreq(this)">Bi-weekly</div>
+                        <div class="irr-chip" data-freq="Monthly" onclick="selectFreq(this)">Monthly</div>
+                        <div class="irr-chip" data-freq="Rainfed" onclick="selectFreq(this)">Rainfed</div>
+                        <div class="irr-chip" data-freq="Drip system" onclick="selectFreq(this)">Drip</div>
+                    </div>
+
+                    <!-- Amount per irrigation -->
+                    <div class="irr-amount-row">
+                        <span class="irr-amount-label">💧 Water per session:</span>
+                        <input type="range" class="irr-slider" id="irrSlider" min="1" max="100" value="20"
+                            oninput="updateIrrAmount(this.value)">
+                        <span class="irr-amount-val" id="irrAmountVal">20 L/m²</span>
+                    </div>
+                </div>
+
+            </div><!-- /phPanel -->
+
+        </div><!-- /inputPanel -->
+
+        <!-- Submit -->
+        <div class="submit-row">
+            <button class="submit-btn" id="submitBtn" onclick="handleRequest()" disabled>
+                <span>✦</span><span id="submitLabel">Analyze</span>
+            </button>
+            <button class="clear-btn" onclick="clearAll()">Clear</button>
+        </div>
+
+        <!-- Result -->
+        <div class="result-panel" id="resultPanel">
+            <div class="result-header">
+                <div class="result-tag">
+                    <div class="result-dot" id="resultDot"></div>
+                    <span id="resultMode">Result</span>
+                </div>
+                <button class="copy-btn" onclick="copyResult()">Copy</button>
+            </div>
+            <div id="resultBody"></div>
+        </div>
+
+        <footer class="footer">GreenMind · AI-powered agriculture guidance · Not a substitute for professional
+            agronomist advice</footer>
+    </div>
+
+    <script>
+        /* ───────── STATE ───────── */
+        let selectedType = null;
+        let imageBase64 = null;
+        let imageMediaType = null;
+        let imageCapable = false;
+        let activeTab = 'upload';
+        let cameraStream = null;
+        let fpsInterval = null;
+
+        const API_KEY = 'AIzaSyA3J3ahlvke9E6EwaEKqeHzWUtdA6D8T-E'; // ← Replace with your Google Gemini API key
+
+        const modeLabels = {
+            disease: 'Disease Detection', crop: 'Crop Recommendation',
+            medicine: 'Medication Advice', fertilizer: 'Fertilizer Guide',
+            weather: 'Location & Season', irrigation: 'Irrigation & pH Advisor'
+        };
+
+        const placeholders = {
+            disease: 'e.g. Yellow spots on tomato leaves, wilting stems, sandy soil, Kerala…',
+            crop: 'e.g. Black cotton soil, 500 mm rainfall, Vidarbha region, Maharashtra…',
+            medicine: 'e.g. Powdery mildew on wheat, organic farm, 2 acres, Punjab…',
+            fertilizer: 'e.g. Paddy field, clay loam soil, last fertilized 3 months ago, Tamil Nadu…',
+            weather: 'e.g. Kozhikode, Kerala — late monsoon season, red laterite soil, 0.5 acres…',
+            irrigation: 'Optional: describe your soil type, climate, or any specific concerns…'
+        };
+
+        /* ───────── MODE ───────── */
+        function selectMode(btn) {
+            document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedType = btn.dataset.type;
+            imageCapable = btn.dataset.image === 'true';
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('modeHint').style.display = 'none';
+            document.getElementById('userInput').placeholder = placeholders[selectedType] || '';
+
+            const sec = document.getElementById('imageSection');
+            const phSec = document.getElementById('phPanel');
+
+            if (selectedType === 'irrigation') {
+                sec.classList.remove('visible');
+                phSec.classList.add('visible');
+                document.getElementById('inputPanel').classList.add('highlight');
+                clearImageState();
+            } else if (imageCapable) {
+                sec.classList.add('visible');
+                phSec.classList.remove('visible');
+                document.getElementById('inputPanel').classList.add('highlight');
+            } else {
+                sec.classList.remove('visible');
+                phSec.classList.remove('visible');
+                clearImageState();
+                document.getElementById('inputPanel').classList.remove('highlight');
+            }
+        }
+
+        /* ───────── TAB ───────── */
+        function switchTab(tab) {
+            activeTab = tab;
+            document.getElementById('tabUpload').classList.toggle('active', tab === 'upload');
+            document.getElementById('tabCamera').classList.toggle('active', tab === 'camera');
+            document.getElementById('uploadPane').classList.toggle('active', tab === 'upload');
+            document.getElementById('cameraPane').classList.toggle('active', tab === 'camera');
+            if (tab === 'upload' && cameraStream) stopCamera();
+            clearImageState();
+        }
+
+        /* ───────── UPLOAD ───────── */
+        function handleImageSelect(e) { if (e.target.files[0]) loadImageFile(e.target.files[0]); }
+        function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag-over'); }
+        function handleDragLeave() { document.getElementById('uploadZone').classList.remove('drag-over'); }
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('uploadZone').classList.remove('drag-over');
+            const f = e.dataTransfer.files[0];
+            if (f && f.type.startsWith('image/')) loadImageFile(f);
+        }
+
+        function loadImageFile(file) {
+            if (file.size > 10 * 1024 * 1024) { alert('Image must be under 10 MB.'); return; }
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                const m = ev.target.result.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
+                if (!m) return;
+                imageMediaType = m[1]; imageBase64 = m[2];
+                document.getElementById('previewImg').src = ev.target.result;
+                document.getElementById('imagePreview').classList.add('visible');
+                document.getElementById('uploadZone').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeUploadedImage() {
+            clearImageState();
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagePreview').classList.remove('visible');
+            document.getElementById('previewImg').src = '';
+            document.getElementById('uploadZone').style.display = '';
+        }
+
+        /* ───────── CAMERA ───────── */
+        async function startCamera() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+                });
+                const video = document.getElementById('cameraFeed');
+                video.srcObject = cameraStream;
+                video.style.display = 'block';
+                document.getElementById('camPlaceholder').style.display = 'none';
+                document.getElementById('cvOverlay').style.display = 'block';
+
+                // Activate HUD
+                setTimeout(() => {
+                    document.getElementById('scanLine').classList.add('active');
+                    document.getElementById('cvHud').classList.add('active');
+                    document.getElementById('cvStatus').classList.add('active');
+                    document.getElementById('statusLeft').textContent = 'LIVE · SCANNING';
+                }, 300);
+
+                document.getElementById('captureBtn').disabled = false;
+                document.getElementById('startCamBtn').style.display = 'none';
+                document.getElementById('stopCamBtn').style.display = '';
+
+                // FPS ticker
+                fpsInterval = setInterval(() => {
+                    const video = document.getElementById('cameraFeed');
+                    const fps = Math.floor(Math.random() * 5 + 25);
+                    document.getElementById('statusLeft').textContent = `LIVE · ${fps} FPS`;
+                    if (video.videoWidth) {
+                        document.getElementById('statusRight').textContent = `${video.videoWidth}×${video.videoHeight} · AI READY`;
+                    }
+                }, 1200);
+
+            } catch (err) {
+                alert('Camera unavailable: ' + err.message);
+            }
+        }
+
+        function stopCamera() {
+            if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+            clearInterval(fpsInterval);
+            const video = document.getElementById('cameraFeed');
+            video.srcObject = null;
+            video.style.display = 'none';
+            document.getElementById('camPlaceholder').style.display = 'flex';
+            document.getElementById('cvOverlay').style.display = 'none';
+            document.getElementById('scanLine').classList.remove('active');
+            document.getElementById('cvHud').classList.remove('active');
+            document.getElementById('cvStatus').classList.remove('active');
+            document.getElementById('captureBtn').disabled = true;
+            document.getElementById('startCamBtn').style.display = '';
+            document.getElementById('stopCamBtn').style.display = 'none';
+        }
+
+        function captureFrame() {
+            const video = document.getElementById('cameraFeed');
+            const canvas = document.getElementById('captureCanvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Flash effect
+            flashOverlay();
+
+            const dataURL = canvas.toDataURL('image/jpeg', 0.88);
+            const m = dataURL.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
+            if (!m) return;
+            imageMediaType = m[1]; imageBase64 = m[2];
+
+            document.getElementById('capturedImg').src = dataURL;
+            document.getElementById('capturePreview').classList.add('visible');
+
+            // Update HUD
+            document.getElementById('cvHud').textContent = 'FRAME CAPTURED ✓';
+            document.getElementById('statusLeft').textContent = 'CAPTURED · READY';
+
+            stopCamera();
+        }
+
+        function flashOverlay() {
+            const outer = document.getElementById('cameraOuter');
+            const div = document.createElement('div');
+            div.style.cssText = `
+      position:absolute;inset:0;background:rgba(57,255,106,0.22);
+      border-radius:14px;pointer-events:none;z-index:20;
+      animation:camFlash 0.45s forwards;
+    `;
+            const s = document.createElement('style');
+            s.textContent = '@keyframes camFlash{0%{opacity:1}100%{opacity:0}}';
+            document.head.appendChild(s);
+            outer.appendChild(div);
+            setTimeout(() => div.remove(), 500);
+        }
+
+        function recapture() {
+            clearImageState();
+            document.getElementById('capturePreview').classList.remove('visible');
+            document.getElementById('capturedImg').src = '';
+            document.getElementById('cvHud').textContent = 'GreenMind CV · Scanning…';
+            startCamera();
+        }
+
+        /* ───────── pH & IRRIGATION ───────── */
+        let selectedFreq = 'Daily';
+
+        function updatePh(val) {
+            val = parseFloat(val);
+            const badge = document.getElementById('phBadge');
+            badge.textContent = val.toFixed(1);
+            // Color the badge based on zone
+            let bg, color;
+            if (val < 5) { bg = 'rgba(232,93,93,0.2)'; color = '#e87777'; }
+            else if (val < 6) { bg = 'rgba(232,147,93,0.2)'; color = '#e8a877'; }
+            else if (val < 6.5) { bg = 'rgba(232,196,93,0.2)'; color = '#e8c877'; }
+            else if (val < 7.5) { bg = 'rgba(127,202,93,0.2)'; color = '#9fd870'; }
+            else if (val < 9) { bg = 'rgba(93,143,232,0.2)'; color = '#80aae8'; }
+            else { bg = 'rgba(123,93,232,0.2)'; color = '#a990e8'; }
+            badge.style.background = bg;
+            badge.style.color = color;
+            // update slider thumb color
+            document.getElementById('phSlider').style.setProperty('--thumb-color', color);
+        }
+
+        // Init badge on load
+        updatePh(6.5);
+
+        // Style the slider thumb dynamically via style injection
+        (function () {
+            const s = document.createElement('style');
+            s.id = 'phThumbStyle';
+            document.head.appendChild(s);
+            const orig = updatePh;
+            window.updatePh = function (val) {
+                orig(val);
+                const color = document.getElementById('phBadge').style.color || '#9fd870';
+                document.getElementById('phThumbStyle').textContent =
+                    `input#phSlider::-webkit-slider-thumb { background: ${color}; }`;
+            };
+            window.updatePh(6.5);
+        })();
+
+        function selectFreq(chip) {
+            document.querySelectorAll('#irrFreqGrid .irr-chip').forEach(c => c.classList.remove('selected'));
+            chip.classList.add('selected');
+            selectedFreq = chip.dataset.freq;
+            document.getElementById('irrFreqLabel').textContent = selectedFreq;
+        }
+
+        function updateIrrAmount(val) {
+            document.getElementById('irrAmountVal').textContent = val + ' L/m²';
+        }
+
+        /* ───────── STATE CLEAR ───────── */
+        function clearImageState() { imageBase64 = null; imageMediaType = null; }
+
+        function clearAll() {
+            document.getElementById('userInput').value = '';
+            document.getElementById('resultPanel').classList.remove('visible');
+            document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+            selectedType = null;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('modeHint').style.display = '';
+            document.getElementById('imageSection').classList.remove('visible');
+            document.getElementById('phPanel').classList.remove('visible');
+            document.getElementById('inputPanel').classList.remove('highlight');
+            removeUploadedImage();
+            document.getElementById('capturePreview').classList.remove('visible');
+            document.getElementById('capturedImg').src = '';
+            stopCamera();
+            clearImageState();
+        }
+
+        /* ───────── PROMPTS ───────── */
+        const textPrompts = {
+            disease: i => `You are an expert agronomist and plant pathologist. A farmer describes: "${i}". Identify the most likely plant disease or pest problem. Explain: 1) What it likely is, 2) The cause, 3) Practical treatment steps, 4) Prevention tips. Be concise and farmer-friendly.`,
+            crop: i => `You are an expert agronomist. Conditions: "${i}". Suggest the 3 best crops to grow. For each: name, why it suits these conditions, expected yield, and one key care tip. Be practical.`,
+            medicine: i => `You are an expert plant pathologist. Problem: "${i}". Recommend specific treatments or agrochemicals. Include: product type, application method, dosage guideline, and safety note. Practical and clear.`,
+            fertilizer: i => `You are an expert soil scientist. Conditions: "${i}". Recommend a fertilizer plan: NPK ratio, organic vs chemical options, application frequency, quantity per acre, and best timing.`,
+            weather: i => `You are an expert agronomist. Location/conditions: "${i}". Recommend top 3 crops for this climate and season. For each: name, why it fits, soil requirement, water needs, growing period.`,
+            irrigation: (i, plant, ph, freq, amount) => `You are an expert agronomist and irrigation specialist. A farmer is growing ${plant || 'an unspecified crop'} and has provided these parameters:
+- Soil pH: ${ph}
+- Irrigation frequency: ${freq}
+- Water amount per session: ${amount} L/m²
+${i ? `- Additional notes: ${i}` : ''}
+
+Please provide a comprehensive analysis covering:
+1) Is the pH level optimal for ${plant || 'this crop'}? Ideal pH range, and what adjustments (if any) are needed (lime to raise, sulfur/acidifiers to lower).
+2) Is the irrigation schedule appropriate? Recommended frequency and quantity for this crop.
+3) Signs of overwatering or underwatering to watch for.
+4) Best irrigation method (drip, sprinkler, flood, furrow) for this crop.
+5) Any seasonal adjustments needed.
+Be specific and practical for a farmer.`
+        };
+
+        const imagePrompts = {
+            disease: i => `You are an expert agronomist with computer vision skills. Carefully analyze this plant photo${i ? ` along with the description: "${i}"` : ''}. 1) Describe what you visually observe (leaf color, texture, spots, wilting, etc.), 2) Diagnose the disease/pest/deficiency, 3) Explain the cause, 4) Give treatment steps, 5) Prevention tips. Cite specific visual evidence.`,
+            medicine: i => `You are an expert plant pathologist. Examine this plant photo${i ? ` and description: "${i}"` : ''}. Identify the visible problem and recommend targeted treatments: product type, application method, dosage, and safety precaution.`,
+            fertilizer: i => `You are an expert soil scientist. Analyze this plant/field photo${i ? ` and description: "${i}"` : ''}. Identify visible signs of nutrient deficiency or soil issues (yellowing, necrosis, stunting, etc.), then recommend a fertilizer plan: NPK ratio, organic vs chemical, dosage per acre, timing.`
+        };
+
+        /* ───────── REQUEST ───────── */
+        async function handleRequest() {
+            const input = document.getElementById('userInput').value.trim();
+            if (!input && !imageBase64 && selectedType !== 'irrigation') { alert('Please describe your situation or capture/upload an image.'); return; }
+            if (!selectedType) { alert('Please select a mode.'); return; }
+
+            const panel = document.getElementById('resultPanel');
+            const body = document.getElementById('resultBody');
+            const dot = document.getElementById('resultDot');
+            const submitBtn = document.getElementById('submitBtn');
+            const submitLabel = document.getElementById('submitLabel');
+
+            panel.classList.add('visible');
+            document.getElementById('resultMode').textContent = modeLabels[selectedType];
+            dot.classList.remove('done');
+            body.innerHTML = `<div class="thinking">Analyzing&nbsp;<div class="thinking-dots"><span></span><span></span><span></span></div></div>`;
+            submitBtn.disabled = true;
+            submitLabel.textContent = 'Analyzing…';
+
+            const hasImage = imageBase64 && imageCapable;
+            let userContent;
+
+            if (selectedType === 'irrigation') {
+                const plant = document.getElementById('plantName').value.trim();
+                const ph = parseFloat(document.getElementById('phSlider').value).toFixed(1);
+                const freq = selectedFreq;
+                const amount = document.getElementById('irrSlider').value;
+                if (!plant && !input) { alert('Please enter a plant/crop name or describe your situation.'); submitBtn.disabled = false; submitLabel.textContent = 'Analyze'; return; }
+                userContent = [{ text: textPrompts.irrigation(input, plant, ph, freq, amount) }];
+            } else if (hasImage) {
+                const fn = imagePrompts[selectedType] || textPrompts[selectedType];
+                userContent = [
+                    { inlineData: { mimeType: imageMediaType, data: imageBase64 } },
+                    { text: fn(input) }
+                ];
+            } else {
+                userContent = [{ text: textPrompts[selectedType](input) }];
+            }
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: userContent }],
+                        generationConfig: { maxOutputTokens: 8192 }
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    body.innerHTML = `<div class="result-body" style="color:rgba(240,100,80,0.85);">⚠ API Error: ${data.error.message}</div>`;
+                } else {
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+                    body.innerHTML = `<div class="result-body">${escapeHtml(text)}</div>`;
+                }
+            } catch (err) {
+                body.innerHTML = `<div class="result-body" style="color:rgba(240,100,80,0.85);">⚠ Request failed. Check your API key and connection.\n\n${err.message}</div>`;
+            }
+
+            dot.classList.add('done');
+            submitBtn.disabled = false;
+            submitLabel.textContent = 'Analyze';
+        }
+
+        function escapeHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function copyResult() {
+            const text = document.querySelector('.result-body')?.textContent || '';
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 1500);
+            });
+        }
+    </script>
+
+</body>
+
+</html>
